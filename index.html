@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluación Piloto Entidades Patrocinadoras · CORFO</title>
+<style>
+:root {
+  --corfo-azul: #221e7c;
+  --corfo-blanco: #FFFFFF;
+  --corfo-gris: #3F3F3F;
+  --corfo-coral: #FD8983;
+  --corfo-menta: #78D6BB;
+  --corfo-cian: #72C7D5;
+  --bg: #F4F5F9;
+  --card: #FFFFFF;
+  --border: #E2E4EF;
+  --text: #2C2C2C;
+  --text-light: #6B7280;
+  --header-h: 64px;
+  --sidebar-w: 270px;
+  --umbral: 5.0;
+  --radius: 10px;
+  --shadow: 0 2px 12px rgba(34,30,124,.08);
+  --transition: 300ms ease;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── HEADER ── */
+#header {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  height: var(--header-h);
+  background: var(--corfo-azul);
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 24px;
+  box-shadow: 0 2px 16px rgba(0,0,0,.25);
+}
+#header img { height: 40px; width: auto; object-fit: contain; }
+#header .header-sep { width: 1px; height: 32px; background: rgba(255,255,255,.25); }
+#header .header-title { color: white; font-size: 15px; font-weight: 600; line-height: 1.3; }
+#header .header-subtitle { color: rgba(255,255,255,.65); font-size: 11px; margin-top: 2px; }
+#header .header-badge {
+  margin-left: auto;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.25);
+  color: white; font-size: 11px; padding: 4px 10px; border-radius: 20px;
+}
+/* Hamburguesa (solo móvil) */
+#menu-toggle {
+  display: none;
+  width: 38px; height: 38px; flex-shrink: 0;
+  background: rgba(255,255,255,.12);
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 8px; color: white; cursor: pointer;
+  font-size: 18px; line-height: 1;
+  align-items: center; justify-content: center;
+}
+#menu-toggle:hover { background: rgba(255,255,255,.22); }
+/* Overlay del drawer (solo móvil) */
+#sidebar-overlay {
+  display: none; position: fixed; inset: 0; z-index: 90;
+  background: rgba(0,0,0,.45); opacity: 0;
+  transition: opacity var(--transition);
+}
+#sidebar-overlay.visible { opacity: 1; }
+
+/* ── LAYOUT ── */
+#app {
+  display: flex;
+  padding-top: var(--header-h);
+  min-height: 100vh;
+}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  position: sticky;
+  top: var(--header-h);
+  height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+  background: var(--card);
+  border-right: 1px solid var(--border);
+  padding: 20px 16px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+#sidebar h3 {
+  font-size: 11px; font-weight: 700; letter-spacing: .08em;
+  color: var(--corfo-azul); text-transform: uppercase; margin-bottom: 4px;
+}
+.filter-group { display: flex; flex-direction: column; gap: 6px; }
+.filter-label { font-size: 12px; font-weight: 600; color: var(--text); }
+.filter-list { display: flex; flex-direction: column; gap: 4px; }
+.filter-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 8px; border-radius: 6px; cursor: pointer;
+  transition: background var(--transition);
+  font-size: 13px;
+}
+.filter-item:hover { background: var(--bg); }
+.filter-item input[type=checkbox] {
+  accent-color: var(--corfo-azul);
+  width: 14px; height: 14px; flex-shrink: 0;
+}
+.filter-item.disabled { opacity: .4; pointer-events: none; }
+.filter-item.select-all {
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding-bottom: 8px;
+  margin-bottom: 2px;
+}
+#btn-clear {
+  margin-top: auto;
+  padding: 9px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--corfo-azul);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all var(--transition);
+}
+#btn-clear:hover { background: var(--corfo-azul); color: white; border-color: var(--corfo-azul); }
+
+/* ── MAIN ── */
+#main {
+  flex: 1; overflow-x: hidden;
+  padding: 24px 28px;
+  max-width: calc(100vw - var(--sidebar-w));
+  display: flex; flex-direction: column; gap: 28px;
+}
+
+/* ── SECTION ── */
+.section {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  border: 1px solid var(--border);
+}
+.section-title {
+  font-size: 17px; font-weight: 700; color: var(--corfo-azul);
+  margin-bottom: 4px; display: flex; align-items: center; gap: 10px;
+}
+.section-title::before {
+  content: '';
+  display: inline-block; width: 4px; height: 20px;
+  background: var(--corfo-azul); border-radius: 2px;
+}
+.section-sub { font-size: 12px; color: var(--text-light); margin-bottom: 20px; }
+
+/* ── NARRATIVE ── */
+.narrative {
+  background: linear-gradient(135deg, rgba(34,30,124,.04) 0%, rgba(114,199,213,.06) 100%);
+  border-left: 3px solid var(--corfo-cian);
+  padding: 12px 16px; border-radius: 0 8px 8px 0;
+  font-size: 13px; color: var(--text); line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* ── KPIs ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  border-radius: 10px;
+  padding: 18px 16px;
+  position: relative; overflow: hidden;
+  transition: transform var(--transition);
+}
+.kpi-card:hover { transform: translateY(-2px); }
+.kpi-card.primary { background: var(--corfo-azul); color: white; }
+.kpi-card.menta { background: #EBF9F5; border: 1px solid var(--corfo-menta); }
+.kpi-card.cian { background: #EAF7FA; border: 1px solid var(--corfo-cian); }
+.kpi-card.coral { background: #FEF0EF; border: 1px solid var(--corfo-coral); }
+.kpi-card.neutral { background: var(--bg); border: 1px solid var(--border); }
+.kpi-label { font-size: 11px; font-weight: 600; opacity: .7; text-transform: uppercase; letter-spacing: .06em; }
+.kpi-value { font-size: 28px; font-weight: 800; line-height: 1.1; margin: 8px 0 4px; }
+.kpi-card.primary .kpi-label, .kpi-card.primary { color: rgba(255,255,255,.8); }
+.kpi-bar {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: rgba(0,0,0,.08);
+}
+.kpi-bar-fill {
+  height: 100%; background: currentColor; opacity: .4;
+  transition: width var(--transition);
+}
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+.tab-btn {
+  padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text-light); cursor: pointer; transition: all var(--transition);
+}
+.tab-btn.active { background: var(--corfo-azul); color: white; border-color: var(--corfo-azul); }
+
+/* ── CHARTS ── */
+.chart-wrap { overflow-x: auto; }
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chart-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+
+svg text { font-family: 'Segoe UI', system-ui, sans-serif; }
+.tooltip {
+  position: fixed; pointer-events: none;
+  background: rgba(34,30,124,.92); color: white;
+  padding: 10px 14px; border-radius: 8px; font-size: 12px; line-height: 1.5;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
+  max-width: 260px; z-index: 200;
+  transition: opacity 150ms; opacity: 0;
+}
+.tooltip.visible { opacity: 1; }
+
+/* ── SCORE BADGE ── */
+.score-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 12px; font-weight: 700;
+}
+
+/* ── RESPONSE TABLE ── */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.resp-table { width: 100%; min-width: 300px; border-collapse: collapse; font-size: 13px; }
+.resp-table th {
+  background: var(--bg); padding: 10px 14px;
+  text-align: left; font-size: 11px; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--text-light); font-weight: 600;
+  border-bottom: 2px solid var(--border);
+}
+.resp-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.resp-table tr:last-child td { border-bottom: none; }
+.resp-table tr:hover td { background: var(--bg); }
+.progress-bar {
+  background: var(--bg); border-radius: 4px; height: 6px; overflow: hidden;
+  min-width: 80px;
+}
+.progress-fill {
+  height: 100%; border-radius: 4px;
+  background: var(--corfo-menta);
+  transition: width var(--transition);
+}
+.progress-fill.low { background: var(--corfo-coral); }
+
+/* ── MAP ── */
+#map-container {
+  display: flex; gap: 24px; align-items: flex-start;
+}
+#map-svg-wrap { flex-shrink: 0; width: 300px; min-width: 300px; }
+#map-svg-wrap svg { max-width: 100%; }
+#map-legend-wrap { flex: 1; min-width: 0; }
+
+/* ── FOOTER ── */
+#footer {
+  text-align: center; padding: 20px;
+  font-size: 11px; color: var(--text-light);
+  border-top: 1px solid var(--border);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  /* Header compacto */
+  #menu-toggle { display: flex; }
+  #header { padding: 0 14px; gap: 10px; }
+  #header img { height: 32px; }
+  #header .header-sep { display: none; }
+  #header .header-title { font-size: 13px; }
+  #header .header-subtitle { font-size: 10px; }
+  #header .header-badge { display: none; }
+
+  /* Sidebar como drawer deslizante */
+  #sidebar {
+    position: fixed;
+    top: var(--header-h); left: 0; bottom: 0;
+    height: calc(100vh - var(--header-h));
+    z-index: 95;
+    transform: translateX(-100%);
+    transition: transform var(--transition);
+    box-shadow: 2px 0 18px rgba(0,0,0,.22);
+  }
+  #sidebar.open { transform: translateX(0); }
+
+  #main { padding: 16px; max-width: 100vw; }
+  .section { padding: 16px; }
+  .charts-row { grid-template-columns: 1fr; }
+
+  /* Mapa: permitir scroll horizontal en vez de recortarse */
+  #map-container { flex-direction: column; }
+  #map-svg-wrap { width: 100%; min-width: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #map-svg-wrap svg { max-width: none; }
+}
+@media (max-width: 600px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .section-title { font-size: 15px; }
+  .tabs { flex-wrap: wrap; }
+}
+
+/* ── LOADING ── */
+#loading {
+  position: fixed; inset: 0; z-index: 300;
+  background: var(--corfo-azul);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: white; gap: 16px; transition: opacity 400ms;
+}
+#loading img { height: 60px; opacity: .9; }
+#loading .load-text { font-size: 14px; opacity: .7; }
+.spinner {
+  width: 36px; height: 36px; border: 3px solid rgba(255,255,255,.2);
+  border-top-color: white; border-radius: 50%;
+  animation: spin 600ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── PRINT / PROJECTOR ── */
+@media print {
+  #header { position: relative; }
+  #sidebar { display: none; }
+  #main { max-width: 100%; padding: 0; }
+  .section { page-break-inside: avoid; box-shadow: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading">
+  <img src="logo corfo.png" alt="CORFO" onerror="this.style.display='none'">
+  <div class="spinner"></div>
+  <div class="load-text">Cargando informe…</div>
+</div>
+
+<!-- Header -->
+<header id="header">
+  <button id="menu-toggle" aria-label="Mostrar u ocultar filtros">☰</button>
+  <img src="logo corfo.png" alt="CORFO" onerror="this.style.display='none'">
+  <div class="header-sep"></div>
+  <div>
+    <div class="header-title">Evaluación Piloto · Entidades Patrocinadoras</div>
+    <div class="header-subtitle">Resultados Agregados · Uso Interno CORFO</div>
+  </div>
+  <div class="header-badge" id="filter-status">Sin filtros activos</div>
+</header>
+
+<!-- Overlay drawer (móvil) -->
+<div id="sidebar-overlay"></div>
+
+<!-- App -->
+<div id="app">
+
+  <!-- Sidebar Filters -->
+  <aside id="sidebar">
+    <h3>Filtros</h3>
+
+    <div class="filter-group">
+      <div class="filter-label">Entidad Patrocinadora</div>
+      <div class="filter-list" id="filter-entidad"></div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-label">Región</div>
+      <div class="filter-list" id="filter-region"></div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-label">Origen convocatoria</div>
+      <div class="filter-list" id="filter-rol"></div>
+    </div>
+
+    <button id="btn-clear">Limpiar filtros</button>
+  </aside>
+
+  <!-- Main Content -->
+  <main id="main">
+
+    <!-- KPIs -->
+    <section class="section" id="sec-kpis">
+      <div class="section-title">Resultados Generales</div>
+      <div class="section-sub" id="kpi-subtitle">Evaluación piloto · Formalización y Ejecución &amp; Monitoreo</div>
+      <div id="narrative-main" class="narrative"></div>
+      <div class="kpi-grid" id="kpi-grid"></div>
+    </section>
+
+    <!-- Rankings -->
+    <section class="section" id="sec-rankings">
+      <div class="section-title">Ranking por Entidad Patrocinadora</div>
+      <div class="section-sub">Promedio por dimensión evaluada · escala 1–7 · umbral referencial: 5,0</div>
+      <div id="narrative-rankings" class="narrative"></div>
+      <div class="charts-row">
+        <div class="chart-panel">
+          <div class="chart-title">Formalización</div>
+          <div id="chart-rank-form"></div>
+        </div>
+        <div class="chart-panel">
+          <div class="chart-title">Ejecución y Monitoreo (Seguimiento)</div>
+          <div id="chart-rank-seg"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Questions -->
+    <section class="section" id="sec-questions">
+      <div class="section-title">Resultados por Pregunta</div>
+      <div class="tabs" id="tabs-q">
+        <button class="tab-btn active" data-tab="formalizacion">Formalización</button>
+        <button class="tab-btn" data-tab="seguimiento">Seguimiento</button>
+      </div>
+      <div id="chart-questions"></div>
+    </section>
+
+    <!-- Heatmap -->
+    <section class="section" id="sec-heatmap">tbl
+      <div class="section-title">Mapa de Calor · Entidad × Pregunta</div>
+      <div class="tabs" id="tabs-hm">
+        <button class="tab-btn active" data-tab="formalizacion">Formalización</button>
+        <button class="tab-btn" data-tab="seguimiento">Seguimiento</button>
+      </div>
+      <div class="chart-wrap" id="chart-heatmap"></div>
+    </section>
+
+    <!-- Map -->
+    <section class="section" id="sec-map">
+      <div class="section-title">Distribución Regional</div>
+      <div id="map-container">
+        <div id="map-svg-wrap"></div>
+        <div id="map-legend-wrap"></div>
+      </div>
+    </section>
+
+    <!-- Response Rate -->
+    <section class="section" id="sec-response">
+      <div class="section-title">Seguimiento de Respuestas</div>
+      <div id="narrative-response" class="narrative"></div>
+      <div class="charts-row">
+        <div>
+          <div class="chart-title">Por Encuesta</div>
+          <div class="table-scroll"><table class="resp-table" id="tbl-resp-rol"></table></div>
+        </div>
+        <div>
+          <div class="chart-title">Por Entidad</div>
+          <div class="table-scroll"><table class="resp-table" id="tbl-resp-entidad"></table></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- DATA_BEGIN -->
+<script>
+// Auto-generado por procesar_datos.py — no editar manualmente
+window.DATA_RECORDS = {"formalizacion": [{"entidad": "Chrysalis", "region": "Región de Tarapacá", "rol": "Regional", "scores": [3, 6, 7, 7, 6]}, {"entidad": "UDD VENTURES", "region": "Región de Tarapacá", "rol": "Regional", "scores": [4, 6, 6, 7, 7]}, {"entidad": "INNOVATORIUM", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [2, 2, 3, 2, 2]}, {"entidad": "UDD VENTURES", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [5, 5, 5, 6, 5]}, {"entidad": "Chrysalis", "region": "Región del Libertador General Bernardo O'Higgins", "rol": "Regional", "scores": [6, 6, 6, 6, 6]}, {"entidad": "INNOVATORIUM", "region": "Región del Libertador General Bernardo O'Higgins", "rol": "Regional", "scores": [2, 2, 2, 2, 2]}, {"entidad": "UDD VENTURES", "region": "Región del Libertador General Bernardo O'Higgins", "rol": "Regional", "scores": [6, 6, 6, 6, 6]}, {"entidad": "Chrysalis", "region": "Región del Maule", "rol": "Regional", "scores": [6, 6, 6, 6, 6]}, {"entidad": "IncubaUDEC", "region": "Región del Maule", "rol": "Regional", "scores": [6, 6, 6, 6, 6]}, {"entidad": "UDD VENTURES", "region": "Región del Maule", "rol": "Regional", "scores": [6, 6, 6, 6, 6]}, {"entidad": "UDD VENTURES", "region": "Región de Ñuble", "rol": "Regional", "scores": [7, 7, 6, 7, 6]}, {"entidad": "IncubaUDEC", "region": "Región de Ñuble", "rol": "Regional", "scores": [7, 7, 6, 7, 6]}, {"entidad": "UDD VENTURES", "region": "Región de La Araucanía", "rol": "Regional", "scores": [6, 6, 6, 7, 6]}, {"entidad": "UDD VENTURES", "region": "Nacional", "rol": "Nacional", "scores": [7, 7, 6, 7, 7]}, {"entidad": "IncubaUDEC", "region": "Nacional", "rol": "Nacional", "scores": [6, 6, 5, 6, 5]}, {"entidad": "INNOVATORIUM", "region": "Nacional", "rol": "Nacional", "scores": [7, 7, 5, 7, 6]}, {"entidad": "Chrysalis", "region": "Nacional", "rol": "Nacional", "scores": [7, 7, 6, 6, 6]}, {"entidad": "Chrysalis", "region": "Región de Valparaíso", "rol": "Regional", "scores": [7, 7, 7, 7, 7]}, {"entidad": "Chrysalis", "region": "Región de Valparaíso", "rol": "Regional", "scores": [7, 7, 7, 7, 7]}, {"entidad": "INNOVATORIUM", "region": "Región de Atacama", "rol": "Regional", "scores": [7, 6, 6, 7, 7]}, {"entidad": "Chrysalis", "region": "Región de Atacama", "rol": "Regional", "scores": [7, 7, 6, 7, 7]}, {"entidad": "INNOVATORIUM", "region": "Región de Los Lagos", "rol": "Regional", "scores": [6, 1, 2, 4, 2]}, {"entidad": "UDD VENTURES", "region": "Nacional", "rol": "Nacional", "scores": [6, 5, 5, 6, 6]}, {"entidad": "IncubaUDEC", "region": "Nacional", "rol": "Nacional", "scores": [5, 5, 4, 5, 5]}, {"entidad": "INNOVATORIUM", "region": "Nacional", "rol": "Nacional", "scores": [6, 5, 5, 6, 6]}, {"entidad": "Chrysalis", "region": "Nacional", "rol": "Nacional", "scores": [5, 6, 5, 6, 6]}, {"entidad": "IncubaUDEC", "region": "Región de Los Ríos", "rol": "Regional", "scores": [7, 7, 6, 7, 7]}, {"entidad": "UDD VENTURES", "region": "Región de Los Ríos", "rol": "Regional", "scores": [6, 7, 6, 7, 7]}], "seguimiento": [{"entidad": "IncubaUDEC", "region": "Región de Ñuble", "rol": "Regional", "scores": [6, 6, 7, 6, 7, 6]}, {"entidad": "IncubaUDEC", "region": "Región del Biobío", "rol": "Regional", "scores": [6, 7, 6, 5, 5, 6]}, {"entidad": "INNOVATORIUM", "region": "Región de La Araucanía", "rol": "Regional", "scores": [5, 5, 5, 5, 5, 5]}, {"entidad": "Chrysalis", "region": "Región del Maule", "rol": "Regional", "scores": [6, 6, 5, 5, 5, 6]}, {"entidad": "INNOVATORIUM", "region": "Región del Libertador General Bernardo O'Higgins", "rol": "Regional", "scores": [2, 5, 2, 1, 1, 1]}, {"entidad": "INNOVATORIUM", "region": "Región del Biobío", "rol": "Regional", "scores": [6, 7, 7, 6, 6, 6]}, {"entidad": "Chrysalis", "region": "Región de Valparaíso", "rol": "Regional", "scores": [6, 7, 6, 7, 7, 6]}, {"entidad": "UDD VENTURES", "region": "Región del Maule", "rol": "Regional", "scores": [6, 6, 6, 5, 4, 6]}, {"entidad": "UDD VENTURES", "region": "Región del Biobío", "rol": "Regional", "scores": [7, 7, 6, 6, 7, 6]}, {"entidad": "IncubaUDEC", "region": "Región del Biobío", "rol": "Regional", "scores": [7, 7, 7, 7, 7, 7]}, {"entidad": "INNOVATORIUM", "region": "Región del Libertador General Bernardo O'Higgins", "rol": "Regional", "scores": [2, 2, 2, 2, 1, 2]}, {"entidad": "INNOVATORIUM", "region": "Región de Ñuble", "rol": "Regional", "scores": [6, 7, 6, 7, 5, 6]}, {"entidad": "INNOVATORIUM", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [5, 5, 5, 2, 2, 2]}, {"entidad": "UDD VENTURES", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [6, 6, 6, 6, 6, 6]}, {"entidad": "INNOVATORIUM", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [7, 6, 6, 5, 6, 6]}, {"entidad": "IncubaUDEC", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [7, 7, 7, 6, 7, 7]}, {"entidad": "INNOVATORIUM", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [6, 7, 7, 7, 7, 7]}, {"entidad": "UDD VENTURES", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [7, 5, 7, 7, 7, 7]}, {"entidad": "UDD VENTURES", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [6, 6, 6, 5, 6, 6]}, {"entidad": "IncubaUDEC", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [6, 6, 5, 4, 5, 6]}, {"entidad": "INNOVATORIUM", "region": "Región de Los Ríos", "rol": "Regional", "scores": [6, 5, 6, 6, 6, 6]}, {"entidad": "UDD VENTURES", "region": "Región de Tarapacá", "rol": "Regional", "scores": [7, 7, 7, 7, 7, 7]}, {"entidad": "INNOVATORIUM", "region": "Región de Tarapacá", "rol": "Regional", "scores": [4, 4, 4, 4, 4, 4]}, {"entidad": "Chrysalis", "region": "Región de Tarapacá", "rol": "Regional", "scores": [7, 7, 7, 7, 7, 7]}, {"entidad": "IncubaUDEC", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [7, 6, 7, 6, 7, 7]}, {"entidad": "IncubaUDEC", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [7, 6, 7, 6, 7, 7]}, {"entidad": "INNOVATORIUM", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [5, 5, 5, 5, 5, 2]}, {"entidad": "UDD VENTURES", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [7, 7, 7, 7, 7, 7]}, {"entidad": "UDD VENTURES", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [6, 5, 4, 5, 4, 5]}, {"entidad": "Chrysalis", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [4, 2, 5, 2, 5, 5]}, {"entidad": "IncubaUDEC", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [1, 2, 1, 2, 5, 2]}, {"entidad": "UDD VENTURES", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [5, 6, 7, 5, 7, 7]}, {"entidad": "IncubaUDEC", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [6, 6, 6, 6, 6, 6]}, {"entidad": "UDD VENTURES", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [7, 7, 7, 7, 7, 7]}, {"entidad": "INNOVATORIUM", "region": "Región de Magallanes y de la Antártica Chilena", "rol": "Regional", "scores": [6, 6, 6, 6, 6, 7]}, {"entidad": "UDD VENTURES", "region": "Región de Magallanes y de la Antártica Chilena", "rol": "Regional", "scores": [6, 6, 6, 6, 6, 6]}, {"entidad": "Chrysalis", "region": "Región del Libertador General Bernardo O'Higgins", "rol": "Regional", "scores": [6, 6, 7, 6, 7, 6]}, {"entidad": "UDD VENTURES", "region": "Región del Maule", "rol": "Regional", "scores": [6, 6, 6, 6, 6, 6]}, {"entidad": "Chrysalis", "region": "Región de Coquimbo", "rol": "Regional", "scores": [6, 4, 5, 6, 5, 6]}, {"entidad": "IncubaUDEC", "region": "", "rol": "Regional", "scores": [6, 6, 6, 6, 6, 6]}, {"entidad": "INNOVATORIUM", "region": "Región del Libertador General Bernardo O'Higgins", "rol": "Regional", "scores": [6, 6, 6, 5, 4, 6]}, {"entidad": "Chrysalis", "region": "Región Metropolitana de Santiago", "rol": "Regional", "scores": [7, 7, 7, 7, 7, 7]}, {"entidad": "INNOVATORIUM", "region": "Región de Los Lagos", "rol": "Regional", "scores": [6, 6, 5, 5, 6, 6]}, {"entidad": "IncubaUDEC", "region": "Región del Biobío", "rol": "Regional", "scores": [5, 6, 6, 6, 6, 6]}, {"entidad": "IncubaUDEC", "region": "Región del Biobío", "rol": "Regional", "scores": [7, 7, 6, 6, 6, 6]}, {"entidad": "INNOVATORIUM", "region": "Región de Valparaíso", "rol": "Regional", "scores": [6, 6, 6, 6, 6, 6]}, {"entidad": "IncubaUDEC", "region": "Región de Valparaíso", "rol": "Regional", "scores": [6, 6, 6, 6, 6, 6]}, {"entidad": "Chrysalis", "region": "Región de Valparaíso", "rol": "Regional", "scores": [6, 6, 5, 6, 5, 5]}, {"entidad": "IncubaUDEC", "region": "Región del Maule", "rol": "Regional", "scores": [5, 4, 4, 5, 5, 4]}, {"entidad": "INNOVATORIUM", "region": "Región del Maule", "rol": "Regional", "scores": [6, 6, 4, 4, 6, 6]}, {"entidad": "INNOVATORIUM", "region": "Región del Libertador General Bernardo O'Higgins", "rol": "Regional", "scores": [6, 7, 6, 5, 7, 6]}, {"entidad": "UDD VENTURES", "region": "Región del Libertador General Bernardo O'Higgins", "rol": "Regional", "scores": [7, 7, 6, 6, 7, 6]}, {"entidad": "Chrysalis", "region": "Región de Valparaíso", "rol": "Regional", "scores": [5, 6, 5, 6, 6, 6]}, {"entidad": "INNOVATORIUM", "region": "Región de Aysén del General Carlos Ibáñez del Campo", "rol": "Regional", "scores": [5, 6, 4, 4, 5, 4]}, {"entidad": "INNOVATORIUM", "region": "Región de Atacama", "rol": "Regional", "scores": [2, 6, 6, 6, 5, 6]}, {"entidad": "Chrysalis", "region": "Región de Coquimbo", "rol": "Regional", "scores": [7, 7, 6, 6, 4, 6]}, {"entidad": "UDD VENTURES", "region": "Región del Maule", "rol": "Regional", "scores": [6, 6, 6, 6, 6, 6]}, {"entidad": "INNOVATORIUM", "region": "Región de Arica y Parinacota", "rol": "Regional", "scores": [4, 5, 4, 4, 4, 4]}, {"entidad": "INNOVATORIUM", "region": "Región de Arica y Parinacota", "rol": "Regional", "scores": [6, 6, 7, 4, 7, 6]}], "preguntas_formalizacion": ["El convenio se firmó dentro del plazo establecido y conforme a las instrucciones enviadas por Corfo.", "Las garantías fueron entregadas en los plazos establecidos y conforme a las instrucciones enviadas por Corfo.", "La entidad se encuentra al día con los requisitos necesarios para formalizar y realizar el pago correspondiente.", "La comunicación con la entidad es fluida y permitió resolver dudas y requerimientos durante el proceso de formalización.", "En general, la entidad cumplió adecuadamente con el proceso completo de formalización de este proyecto."], "preguntas_seguimiento": ["La entidad presentó los reportes de avance dentro de los plazos establecidos.", "La información contenida en los reportes fue clara y completa.", "El soporte técnico brindado por la entidad permitió resolver oportunamente las incidencias del proyecto.", "La entidad gestionó de manera proactiva los riesgos y desvíos identificados.", "La comunicación de la entidad con el equipo técnico de Corfo fue fluida y eficiente.", "En general, la calidad de la supervisión y monitoreo de la ejecución por parte de la entidad fue satisfactoria."]};
+window.DATA_SUMMARY = {"promedio_general": 5.71, "promedio_formalizacion": 5.76, "promedio_seguimiento": 5.66, "tasa_respuesta_general": 0.5857, "total_evaluaciones": 140, "contestadas": 82, "umbral": 5.0, "alertas": [], "n_formalizacion": 31, "n_seguimiento": 60, "entidades": ["Chrysalis", "INNOVATORIUM", "IncubaUDEC", "UDD VENTURES"], "regiones": ["Nacional", "Región Metropolitana de Santiago", "Región de Arica y Parinacota", "Región de Atacama", "Región de Aysén del General Carlos Ibáñez del Campo", "Región de Coquimbo", "Región de La Araucanía", "Región de Los Lagos", "Región de Los Ríos", "Región de Magallanes y de la Antártica Chilena", "Región de Tarapacá", "Región de Valparaíso", "Región de Ñuble", "Región del Biobío", "Región del Libertador General Bernardo O'Higgins", "Región del Maule"]};
+window.DATA_RESPONSE_RATE = {"total": {"total": 140, "contestadas": 82, "tasa": 0.5857}, "formalizacion": {"total": 30, "contestadas": 27, "tasa": 0.9}, "seguimiento": {"total": 110, "contestadas": 55, "tasa": 0.5}, "por_rol": {"Nacional": {"total": 8, "contestadas": 8, "tasa": 1.0}, "Regional": {"total": 132, "contestadas": 74, "tasa": 0.5606}}, "por_entidad": {"Chrysalis": {"general": {"total": 25, "contestadas": 17, "tasa": 0.68}, "formalizacion": {"total": 8, "contestadas": 7, "tasa": 0.875}, "seguimiento": {"total": 17, "contestadas": 10, "tasa": 0.5882}}, "INNOVATORIUM": {"general": {"total": 50, "contestadas": 25, "tasa": 0.5}, "formalizacion": {"total": 7, "contestadas": 6, "tasa": 0.8571}, "seguimiento": {"total": 43, "contestadas": 19, "tasa": 0.4419}}, "IncubaUDEC": {"general": {"total": 30, "contestadas": 18, "tasa": 0.6}, "formalizacion": {"total": 6, "contestadas": 5, "tasa": 0.8333}, "seguimiento": {"total": 24, "contestadas": 13, "tasa": 0.5417}}, "UDD VENTURES": {"general": {"total": 35, "contestadas": 22, "tasa": 0.6286}, "formalizacion": {"total": 9, "contestadas": 9, "tasa": 1.0}, "seguimiento": {"total": 26, "contestadas": 13, "tasa": 0.5}}}, "por_region": {"Nacional": {"general": {"total": 8, "contestadas": 8, "tasa": 1.0}, "formalizacion": {"total": 8, "contestadas": 8, "tasa": 1.0}, "seguimiento": {"total": 0, "contestadas": 0, "tasa": 0}}, "Región Metropolitana de Santiago": {"general": {"total": 34, "contestadas": 21, "tasa": 0.6176}, "formalizacion": {"total": 3, "contestadas": 2, "tasa": 0.6667}, "seguimiento": {"total": 31, "contestadas": 19, "tasa": 0.6129}}, "Región de Antofagasta": {"general": {"total": 1, "contestadas": 0, "tasa": 0.0}, "formalizacion": {"total": 0, "contestadas": 0, "tasa": 0}, "seguimiento": {"total": 1, "contestadas": 0, "tasa": 0.0}}, "Región de Arica y Parinacota": {"general": {"total": 2, "contestadas": 0, "tasa": 0.0}, "formalizacion": {"total": 0, "contestadas": 0, "tasa": 0}, "seguimiento": {"total": 2, "contestadas": 0, "tasa": 0.0}}, "Región de Atacama": {"general": {"total": 5, "contestadas": 3, "tasa": 0.6}, "formalizacion": {"total": 2, "contestadas": 2, "tasa": 1.0}, "seguimiento": {"total": 3, "contestadas": 1, "tasa": 0.3333}}, "Región de Aysén del General Carlos Ibáñez del Campo": {"general": {"total": 2, "contestadas": 1, "tasa": 0.5}, "formalizacion": {"total": 0, "contestadas": 0, "tasa": 0}, "seguimiento": {"total": 2, "contestadas": 1, "tasa": 0.5}}, "Región de Coquimbo": {"general": {"total": 5, "contestadas": 2, "tasa": 0.4}, "formalizacion": {"total": 1, "contestadas": 0, "tasa": 0.0}, "seguimiento": {"total": 4, "contestadas": 2, "tasa": 0.5}}, "Región de La Araucanía": {"general": {"total": 7, "contestadas": 2, "tasa": 0.2857}, "formalizacion": {"total": 1, "contestadas": 1, "tasa": 1.0}, "seguimiento": {"total": 6, "contestadas": 1, "tasa": 0.1667}}, "Región de Los Lagos": {"general": {"total": 7, "contestadas": 2, "tasa": 0.2857}, "formalizacion": {"total": 1, "contestadas": 1, "tasa": 1.0}, "seguimiento": {"total": 6, "contestadas": 1, "tasa": 0.1667}}, "Región de Los Ríos": {"general": {"total": 7, "contestadas": 3, "tasa": 0.4286}, "formalizacion": {"total": 2, "contestadas": 2, "tasa": 1.0}, "seguimiento": {"total": 5, "contestadas": 1, "tasa": 0.2}}, "Región de Magallanes y de la Antártica Chilena": {"general": {"total": 6, "contestadas": 2, "tasa": 0.3333}, "formalizacion": {"total": 1, "contestadas": 0, "tasa": 0.0}, "seguimiento": {"total": 5, "contestadas": 2, "tasa": 0.4}}, "Región de Tarapacá": {"general": {"total": 5, "contestadas": 5, "tasa": 1.0}, "formalizacion": {"total": 2, "contestadas": 2, "tasa": 1.0}, "seguimiento": {"total": 3, "contestadas": 3, "tasa": 1.0}}, "Región de Valparaíso": {"general": {"total": 11, "contestadas": 6, "tasa": 0.5455}, "formalizacion": {"total": 1, "contestadas": 1, "tasa": 1.0}, "seguimiento": {"total": 10, "contestadas": 5, "tasa": 0.5}}, "Región de Ñuble": {"general": {"total": 7, "contestadas": 4, "tasa": 0.5714}, "formalizacion": {"total": 2, "contestadas": 2, "tasa": 1.0}, "seguimiento": {"total": 5, "contestadas": 2, "tasa": 0.4}}, "Región del Biobío": {"general": {"total": 14, "contestadas": 6, "tasa": 0.4286}, "formalizacion": {"total": 0, "contestadas": 0, "tasa": 0}, "seguimiento": {"total": 14, "contestadas": 6, "tasa": 0.4286}}, "Región del Libertador General Bernardo O'Higgins": {"general": {"total": 10, "contestadas": 9, "tasa": 0.9}, "formalizacion": {"total": 3, "contestadas": 3, "tasa": 1.0}, "seguimiento": {"total": 7, "contestadas": 6, "tasa": 0.8571}}, "Región del Maule": {"general": {"total": 9, "contestadas": 8, "tasa": 0.8889}, "formalizacion": {"total": 3, "contestadas": 3, "tasa": 1.0}, "seguimiento": {"total": 6, "contestadas": 5, "tasa": 0.8333}}}};
+</script>
+<!-- DATA_END -->
+<!-- D3 (local; si falta el archivo se carga desde CDN antes de continuar) -->
+<script src="vendor/d3.v7.min.js"></script>
+<script>
+if (typeof window.d3 === 'undefined') {
+  document.write('<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"><\/script>');
+}
+</script>
+<script>
+// ── STATE ────────────────────────────────────────────────────────────────────
+const state = {
+  filters: { entidad: new Set(), region: new Set(), rol: new Set() },
+  activeTabQ: 'formalizacion',
+  activeTabHm: 'formalizacion',
+  data: null,
+  respData: null
+};
+
+const UMBRAL = 5.0;
+const SCALE_MAX = 7;
+const C = {
+  azul: '#221e7c', blanco: '#FFFFFF', gris: '#3F3F3F',
+  coral: '#FD8983', menta: '#78D6BB', cian: '#72C7D5',
+  bg: '#F4F5F9'
+};
+
+// ── COLOR SCALE ──────────────────────────────────────────────────────────────
+const colorScale = d3.scaleLinear()
+  .domain([1, UMBRAL, 7])
+  .range([C.coral, '#F5F5E8', C.menta])
+  .clamp(true);
+
+// ── TOOLTIP ──────────────────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+function showTip(html, event) {
+  tooltip.innerHTML = html;
+  tooltip.classList.add('visible');
+  moveTip(event);
+}
+function moveTip(event) {
+  const x = event.clientX + 14, y = event.clientY - 10;
+  const w = tooltip.offsetWidth, h = tooltip.offsetHeight;
+  tooltip.style.left = (x + w > window.innerWidth ? x - w - 20 : x) + 'px';
+  tooltip.style.top = (y + h > window.innerHeight ? y - h - 10 : y) + 'px';
+}
+function hideTip() { tooltip.classList.remove('visible'); }
+
+// ── STATS ────────────────────────────────────────────────────────────────────
+function calcStats(vals) {
+  const v = vals.filter(x => x !== null && x !== undefined && !isNaN(x));
+  if (!v.length) return { promedio: null, std: null, min: null, max: null, n: 0 };
+  const avg = v.reduce((a,b) => a+b, 0) / v.length;
+  const variance = v.reduce((a,b) => a + (b-avg)**2, 0) / v.length;
+  return {
+    promedio: Math.round(avg * 100) / 100,
+    std: Math.round(Math.sqrt(variance) * 100) / 100,
+    min: Math.min(...v), max: Math.max(...v), n: v.length
+  };
+}
+
+function filterRecords(tipo) {
+  if (!state.data) return [];
+  const recs = state.data[tipo] || [];
+  return recs.filter(r => {
+    if (state.filters.entidad.size && !state.filters.entidad.has(r.entidad)) return false;
+    if (state.filters.region.size && !state.filters.region.has(r.region)) return false;
+    if (state.filters.rol.size && !state.filters.rol.has(r.rol)) return false;
+    return true;
+  });
+}
+
+function computeAll(tipo) {
+  const recs = filterRecords(tipo);
+  const labels = tipo === 'formalizacion'
+    ? state.data.preguntas_formalizacion
+    : state.data.preguntas_seguimiento;
+  const nQ = labels.length;
+
+  // Overall
+  const allScores = recs.flatMap(r => r.scores.filter(s => s !== null && !isNaN(s)));
+  const overall = calcStats(allScores);
+
+  // Per question
+  const perQ = labels.map((label, qi) => {
+    const vs = recs.map(r => r.scores[qi]).filter(s => s !== null && !isNaN(s));
+    return { id: tipo === 'formalizacion' ? `F${qi+1}` : `S${qi+1}`, label, ...calcStats(vs) };
+  });
+
+  // Per entity
+  const entities = [...new Set(recs.map(r => r.entidad).filter(Boolean))].sort();
+  const perEntity = entities.map(e => {
+    const er = recs.filter(r => r.entidad === e);
+    const vs = er.flatMap(r => r.scores.filter(s => s !== null && !isNaN(s)));
+    const perQE = labels.map((_, qi) => {
+      const qvs = er.map(r => r.scores[qi]).filter(s => s !== null && !isNaN(s));
+      return calcStats(qvs).promedio;
+    });
+    return { entidad: e, ...calcStats(vs), perQ: perQE, n_recs: er.length };
+  }).sort((a,b) => (b.promedio||0) - (a.promedio||0));
+
+  // Per region
+  const regions = [...new Set(recs.map(r => r.region).filter(Boolean))].sort();
+  const perRegion = regions.map(reg => {
+    const vs = recs.filter(r => r.region === reg).flatMap(r => r.scores.filter(s => s !== null && !isNaN(s)));
+    return { region: reg, ...calcStats(vs) };
+  });
+
+  // Per rol
+  const roles = ['Nacional', 'Regional'];
+  const perRol = {};
+  roles.forEach(rol => {
+    const vs = recs.filter(r => r.rol === rol).flatMap(r => r.scores.filter(s => s !== null && !isNaN(s)));
+    perRol[rol] = calcStats(vs);
+  });
+
+  // Radar: per rol per question
+  const radarData = {};
+  roles.forEach(rol => {
+    const rr = recs.filter(r => r.rol === rol);
+    radarData[rol] = labels.map((_, qi) => {
+      const vs = rr.map(r => r.scores[qi]).filter(s => s !== null && !isNaN(s));
+      return calcStats(vs).promedio;
+    });
+  });
+
+  return { overall, perQ, perEntity, perRegion, perRol, radarData, labels, recs };
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+function init() {
+  // Carga offline desde window.DATA_* (generados por procesar_datos.py → data.js)
+  // Si no están disponibles, intenta fetch (modo servidor / GitHub Pages)
+  if (window.DATA_RECORDS && window.DATA_SUMMARY && window.DATA_RESPONSE_RATE) {
+    try {
+      state.data = window.DATA_RECORDS;
+      state.respData = window.DATA_RESPONSE_RATE;
+      state.summary = window.DATA_SUMMARY;
+      setupFilters();
+      render();
+      document.getElementById('loading').style.opacity = '0';
+      setTimeout(() => document.getElementById('loading').style.display = 'none', 400);
+    } catch (err) {
+      console.error(err);
+      document.getElementById('loading').innerHTML =
+        `<div style="color:white;font-size:14px;text-align:center;padding:20px">
+          Error al construir el informe.<br><small>${err.message}</small></div>`;
+    }
+  } else {
+    Promise.all([
+      fetch('data/records.json').then(r => r.json()),
+      fetch('data/response_rate.json').then(r => r.json()),
+      fetch('data/summary.json').then(r => r.json())
+    ]).then(([records, respRate, summary]) => {
+      state.data = records;
+      state.respData = respRate;
+      state.summary = summary;
+      setupFilters();
+      render();
+      document.getElementById('loading').style.opacity = '0';
+      setTimeout(() => document.getElementById('loading').style.display = 'none', 400);
+    }).catch(err => {
+      document.getElementById('loading').innerHTML =
+        `<div style="color:white;font-size:14px;text-align:center;padding:20px">
+          Error cargando datos.<br><small>${err.message}</small><br><br>
+          <span style="font-size:11px;opacity:.7">Modo offline: asegúrate de que data/data.js existe</span>
+        </div>`;
+    });
+  }
+}
+
+// ── FILTERS ──────────────────────────────────────────────────────────────────
+function setupFilters() {
+  const recs = [...(state.data.formalizacion || []), ...(state.data.seguimiento || [])];
+  const entities = [...new Set(recs.map(r => r.entidad).filter(Boolean))].sort();
+  const regions = [...new Set(recs.map(r => r.region).filter(Boolean))]
+    .sort((a, b) => geoRegionRank(a) - geoRegionRank(b));
+  const roles = ['Nacional', 'Regional'];
+
+  buildFilterList('filter-entidad', entities, 'entidad');
+  buildFilterList('filter-region', regions, 'region');
+  buildFilterList('filter-rol', roles, 'rol');
+
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    state.filters.entidad.clear();
+    state.filters.region.clear();
+    state.filters.rol.clear();
+    document.querySelectorAll('.filter-item input').forEach(cb => { cb.checked = false; cb.indeterminate = false; });
+    document.querySelectorAll('.filter-item.disabled').forEach(el => el.classList.remove('disabled'));
+    updateFilterStatus();
+    render();
+  });
+}
+
+function buildFilterList(containerId, items, filterKey) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+
+  // Opción "Seleccionar todos"
+  const allLabel = document.createElement('label');
+  allLabel.className = 'filter-item select-all';
+  const allCb = document.createElement('input');
+  allCb.type = 'checkbox';
+  allCb.className = 'select-all-cb';
+  allCb.addEventListener('change', () => {
+    const enabled = el.querySelectorAll('.filter-item:not(.select-all):not(.disabled) input');
+    enabled.forEach(cb => {
+      cb.checked = allCb.checked;
+      if (allCb.checked) state.filters[filterKey].add(cb.value);
+      else state.filters[filterKey].delete(cb.value);
+    });
+    allCb.indeterminate = false;
+    if (filterKey === 'entidad') updateRegionFilter();
+    if (filterKey === 'region') updateEntityFilter();
+    updateFilterStatus();
+    render();
+  });
+  const allSpan = document.createElement('span');
+  allSpan.textContent = 'Seleccionar todos';
+  allSpan.style.fontWeight = '700';
+  allLabel.appendChild(allCb);
+  allLabel.appendChild(allSpan);
+  el.appendChild(allLabel);
+
+  items.forEach(item => {
+    const label = document.createElement('label');
+    label.className = 'filter-item';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = item;
+    cb.addEventListener('change', () => {
+      if (cb.checked) state.filters[filterKey].add(item);
+      else state.filters[filterKey].delete(item);
+      if (filterKey === 'entidad') updateRegionFilter();
+      if (filterKey === 'region') updateEntityFilter();
+      syncSelectAll(containerId);
+      updateFilterStatus();
+      render();
+    });
+    const span = document.createElement('span');
+    span.textContent = item.length > 28 ? item.substring(0, 26) + '…' : item;
+    span.title = item;
+    label.appendChild(cb);
+    label.appendChild(span);
+    el.appendChild(label);
+  });
+}
+
+// Sincroniza el estado del checkbox "Seleccionar todos" según los ítems habilitados
+function syncSelectAll(containerId) {
+  const el = document.getElementById(containerId);
+  const allCb = el.querySelector('.select-all-cb');
+  if (!allCb) return;
+  const items = [...el.querySelectorAll('.filter-item:not(.select-all):not(.disabled) input')];
+  const checked = items.filter(cb => cb.checked).length;
+  allCb.checked = items.length > 0 && checked === items.length;
+  allCb.indeterminate = checked > 0 && checked < items.length;
+}
+
+function updateRegionFilter() {
+  if (!state.filters.entidad.size) {
+    document.querySelectorAll('#filter-region .filter-item').forEach(el => el.classList.remove('disabled'));
+    syncSelectAll('filter-region');
+    return;
+  }
+  const recs = [...(state.data.formalizacion || []), ...(state.data.seguimiento || [])];
+  const validRegions = new Set(recs.filter(r => state.filters.entidad.has(r.entidad)).map(r => r.region));
+  document.querySelectorAll('#filter-region .filter-item:not(.select-all)').forEach(el => {
+    const cb = el.querySelector('input');
+    if (!validRegions.has(cb.value)) {
+      el.classList.add('disabled');
+      cb.checked = false;
+      state.filters.region.delete(cb.value);
+    } else {
+      el.classList.remove('disabled');
+    }
+  });
+  syncSelectAll('filter-region');
+}
+
+function updateEntityFilter() {
+  if (!state.filters.region.size) {
+    document.querySelectorAll('#filter-entidad .filter-item').forEach(el => el.classList.remove('disabled'));
+    syncSelectAll('filter-entidad');
+    return;
+  }
+  const recs = [...(state.data.formalizacion || []), ...(state.data.seguimiento || [])];
+  const validEntities = new Set(recs.filter(r => state.filters.region.has(r.region)).map(r => r.entidad));
+  document.querySelectorAll('#filter-entidad .filter-item:not(.select-all)').forEach(el => {
+    const cb = el.querySelector('input');
+    if (!validEntities.has(cb.value)) {
+      el.classList.add('disabled');
+      cb.checked = false;
+      state.filters.entidad.delete(cb.value);
+    } else {
+      el.classList.remove('disabled');
+    }
+  });
+  syncSelectAll('filter-entidad');
+}
+
+function updateFilterStatus() {
+  const active = [
+    ...state.filters.entidad, ...state.filters.region, ...state.filters.rol
+  ].length;
+  const el = document.getElementById('filter-status');
+  el.textContent = active ? `${active} filtro${active > 1 ? 's' : ''} activo${active > 1 ? 's' : ''}` : 'Sin filtros activos';
+  el.style.background = active ? 'rgba(120,214,187,.25)' : 'rgba(255,255,255,.12)';
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  const f = computeAll('formalizacion');
+  const s = computeAll('seguimiento');
+
+  const pf = f.overall.promedio, ps = s.overall.promedio;
+  const pg = (pf !== null && ps !== null) ? Math.round((pf + ps) / 2 * 100) / 100 : null;
+
+  renderKPIs(pf, ps, pg);
+  renderNarrativeMain(pf, ps, pg, f, s);
+  renderRankings(f, s);
+  renderQuestions(state.activeTabQ);
+  renderHeatmap(state.activeTabHm);
+  renderMap(f, s);
+  renderResponseTables();
+}
+
+// ── KPIs ─────────────────────────────────────────────────────────────────────
+function renderKPIs(pf, ps, pg) {
+  const cont = document.getElementById('kpi-grid');
+  const totalRespRate = state.respData?.total;
+  const fmt = v => v !== null && v !== undefined ? v.toFixed(2).replace('.', ',') : '—';
+  const fmtPct = v => v !== null && v !== undefined ? (v * 100).toFixed(0) + '%' : '—';
+
+  const nF = filterRecords('formalizacion').length;
+  const nS = filterRecords('seguimiento').length;
+
+  const cards = [
+    {
+      label: 'Promedio General', value: fmt(pg),
+      note: 'Promedio de Formalización y Seguimiento (igual peso)',
+      cls: 'primary', pct: pg ? (pg / 7) : 0
+    },
+    {
+      label: 'Formalización', value: fmt(pf),
+      note: `${nF} evaluaciones · 5 preguntas`,
+      cls: pf !== null ? (pf >= UMBRAL ? 'menta' : 'coral') : 'neutral',
+      pct: pf ? (pf / 7) : 0
+    },
+    {
+      label: 'Ejecución y Monitoreo', value: fmt(ps),
+      note: `${nS} evaluaciones · 6 preguntas`,
+      cls: ps !== null ? (ps >= UMBRAL ? 'cian' : 'coral') : 'neutral',
+      pct: ps ? (ps / 7) : 0
+    }
+  ];
+
+  cont.innerHTML = '';
+  cards.forEach(card => {
+    const div = document.createElement('div');
+    div.className = `kpi-card ${card.cls}`;
+    div.innerHTML = `
+      <div class="kpi-label">${card.label}</div>
+      <div class="kpi-value">${card.value}</div>
+      <div class="kpi-bar"><div class="kpi-bar-fill" style="width:${Math.min(100, card.pct * 100).toFixed(0)}%"></div></div>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+// ── NARRATIVE MAIN ───────────────────────────────────────────────────────────
+function renderNarrativeMain(pf, ps, pg, f, s) {
+  const el = document.getElementById('narrative-main');
+  if (!pf && !ps) { el.textContent = 'Sin datos para los filtros seleccionados.'; return; }
+  const bestF = f.perEntity.length ? f.perEntity[0] : null;
+  const bestS = s.perEntity.length ? s.perEntity[0] : null;
+  const brecha = (pf !== null && ps !== null) ? Math.abs(pf - ps).toFixed(2) : null;
+  const dim = pf !== null && ps !== null ? (pf > ps ? 'Formalización' : 'Ejecución y Monitoreo') : '';
+  let txt = '';
+  if (pg !== null) txt += `El promedio general del piloto es <strong>${pg.toFixed(2).replace('.', ',')}</strong> en escala 1–7. `;
+  if (pf && ps) txt += `Respecto a la encuesta de Formalización, esta promedia <strong>${pf.toFixed(2).replace('.', ',')}</strong>, mientras que la encuesta de Ejecución y Monitoreo <strong>${ps.toFixed(2).replace('.', ',')}</strong>. `;
+  if (bestF) txt += `La entidad con mejor desempeño en Formalización es <strong>${bestF.entidad}</strong> (${bestF.promedio?.toFixed(2).replace('.', ',')}). `;
+  if (bestS) txt += `En Ejecución y Monitoreo, destaca <strong>${bestS.entidad}</strong> (${bestS.promedio?.toFixed(2).replace('.', ',')}).`;
+  el.innerHTML = txt;
+}
+
+// ── RANKINGS ─────────────────────────────────────────────────────────────────
+function renderNarrativeRankings(f, s) {
+  const el = document.getElementById('narrative-rankings');
+  if (!f.perEntity.length && !s.perEntity.length) { el.textContent = ''; return; }
+  const lines = [];
+  if (f.perEntity.length >= 2) {
+    const top = f.perEntity[0], bot = f.perEntity[f.perEntity.length - 1];
+    const brecha = top.promedio && bot.promedio ? (top.promedio - bot.promedio).toFixed(2) : null;
+    lines.push(`En Formalización, <strong>${top.entidad}</strong> lidera con ${top.promedio?.toFixed(2).replace('.',',')}${brecha ? `, mientras <strong>${bot.entidad}</strong> registra ${bot.promedio?.toFixed(2).replace('.',',')} (brecha de ${brecha} pts)` : ''}.`);
+  }
+  if (s.perEntity.length >= 2) {
+    const top = s.perEntity[0], bot = s.perEntity[s.perEntity.length - 1];
+    const brecha = top.promedio && bot.promedio ? (top.promedio - bot.promedio).toFixed(2) : null;
+    lines.push(`En Ejecución y Monitoreo, <strong>${top.entidad}</strong> es la mejor evaluada con ${top.promedio?.toFixed(2).replace('.',',')}${brecha ? ` (brecha de ${brecha} pts respecto al menor)` : ''}.`);
+  }
+  el.innerHTML = lines.join(' ');
+}
+
+function renderRankings(f, s) {
+  renderNarrativeRankings(f, s);
+  drawHBarChart('#chart-rank-form', f.perEntity, 'formalizacion');
+  drawHBarChart('#chart-rank-seg', s.perEntity, 'seguimiento');
+}
+
+function drawHBarChart(selector, entities, tipo) {
+  const el = document.querySelector(selector);
+  if (!el) return;
+  el.innerHTML = '';
+  if (!entities.length) {
+    el.innerHTML = '<p style="color:var(--text-light);font-size:13px">Sin datos</p>';
+    return;
+  }
+
+  const margin = { top: 8, right: 24, bottom: 20, left: 120 };
+  const W = el.offsetWidth || 420;
+  const barH = 32, gap = 8;
+  const H = entities.length * (barH + gap) + margin.top + margin.bottom;
+
+  const svg = d3.select(el).append('svg').attr('width', W).attr('height', H);
+  const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+  const innerW = W - margin.left - margin.right;
+
+  const x = d3.scaleLinear().domain([0, 7]).range([0, innerW]);
+
+  // Umbral line
+  g.append('line')
+    .attr('x1', x(UMBRAL)).attr('x2', x(UMBRAL))
+    .attr('y1', 0).attr('y2', H - margin.top - margin.bottom)
+    .attr('stroke', '#94A3B8').attr('stroke-dasharray', '4,3').attr('stroke-width', 1.5);
+
+  const barsG = g.selectAll('.bar-group').data(entities).join('g')
+    .attr('class', 'bar-group')
+    .attr('transform', (_, i) => `translate(0, ${i * (barH + gap)})`);
+
+  // Background
+  barsG.append('rect')
+    .attr('x', 0).attr('y', 0).attr('width', innerW).attr('height', barH)
+    .attr('fill', '#F8F9FC').attr('rx', 4);
+
+  // Bar
+  barsG.append('rect')
+    .attr('x', 0).attr('y', 0)
+    .attr('width', 0).attr('height', barH)
+    .attr('fill', d => colorScale(d.promedio || 0)).attr('rx', 4)
+    .transition().duration(500).ease(d3.easeCubicOut)
+    .attr('width', d => d.promedio ? x(d.promedio) : 0);
+
+  // Entity label
+  barsG.append('text')
+    .attr('x', -8).attr('y', barH / 2)
+    .attr('text-anchor', 'end').attr('dominant-baseline', 'middle')
+    .attr('font-size', 12).attr('fill', C.gris).attr('font-weight', 500)
+    .text(d => d.entidad);
+
+  // Value label
+  barsG.append('text')
+    .attr('x', d => d.promedio ? x(d.promedio) + 6 : 4)
+    .attr('y', barH / 2).attr('dominant-baseline', 'middle')
+    .attr('font-size', 12).attr('fill', C.gris).attr('font-weight', 700)
+    .text(d => d.promedio ? d.promedio.toFixed(2).replace('.', ',') : '—');
+
+  // Tooltip
+  barsG.on('mousemove', (event, d) => {
+    const tip = `<strong>${d.entidad}</strong><br>
+      Promedio: ${d.promedio?.toFixed(2).replace('.',',') || '—'}<br>
+      DE: ${d.std?.toFixed(2).replace('.',',') || '—'}<br>
+      Mín: ${d.min} · Máx: ${d.max}<br>
+      Evaluaciones: ${d.n_recs}`;
+    showTip(tip, event);
+  }).on('mouseleave', hideTip);
+
+  // X axis
+  g.append('g').attr('transform', `translate(0,${H - margin.top - margin.bottom})`)
+    .call(d3.axisBottom(x).ticks(7).tickSize(3))
+    .call(ax => ax.select('.domain').remove())
+    .call(ax => ax.selectAll('text').attr('font-size', 10).attr('fill', '#94A3B8'));
+}
+
+// ── QUESTIONS ─────────────────────────────────────────────────────────────────
+function renderQuestions(tipo) {
+  const data = computeAll(tipo);
+  const el = document.getElementById('chart-questions');
+  el.innerHTML = '';
+
+  const margin = { top: 10, right: 80, bottom: 80, left: 55 };
+  const W = el.offsetWidth || 700;
+  const H = 280;
+  const innerW = W - margin.left - margin.right;
+  const innerH = H - margin.top - margin.bottom;
+
+  const svg = d3.select(el).append('svg').attr('width', W).attr('height', H);
+  const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+  const ids = data.perQ.map(q => q.id);
+  const x = d3.scaleBand().domain(ids).range([0, innerW]).padding(0.35);
+  const y = d3.scaleLinear().domain([0, 7]).range([innerH, 0]).nice();
+
+  // Grid
+  g.append('g').attr('class', 'grid').call(
+    d3.axisLeft(y).ticks(7).tickSize(-innerW).tickFormat('')
+  ).call(ax => ax.select('.domain').remove())
+    .call(ax => ax.selectAll('line').attr('stroke', '#E8EAF0').attr('stroke-dasharray', '3,3'));
+
+  // Umbral line
+  g.append('line')
+    .attr('x1', 0).attr('x2', innerW)
+    .attr('y1', y(UMBRAL)).attr('y2', y(UMBRAL))
+    .attr('stroke', '#94A3B8').attr('stroke-dasharray', '5,4').attr('stroke-width', 1.5);
+  g.append('text')
+    .attr('x', innerW + 4).attr('y', y(UMBRAL))
+    .attr('dominant-baseline', 'middle').attr('font-size', 10).attr('fill', '#94A3B8')
+    .text('5,0');
+
+  // Bars
+  const bars = g.selectAll('.q-bar').data(data.perQ).join('rect')
+    .attr('class', 'q-bar')
+    .attr('x', d => x(d.id))
+    .attr('y', innerH)
+    .attr('width', x.bandwidth())
+    .attr('height', 0)
+    .attr('rx', 4)
+    .attr('fill', d => d.promedio ? colorScale(d.promedio) : '#E2E4EF');
+
+  bars.transition().duration(500).ease(d3.easeCubicOut)
+    .attr('y', d => d.promedio ? y(d.promedio) : innerH)
+    .attr('height', d => d.promedio ? innerH - y(d.promedio) : 0);
+
+  // Value labels
+  g.selectAll('.val-lbl').data(data.perQ).join('text')
+    .attr('class', 'val-lbl')
+    .attr('x', d => x(d.id) + x.bandwidth() / 2)
+    .attr('y', d => d.promedio ? y(d.promedio) - 6 : innerH)
+    .attr('text-anchor', 'middle').attr('font-size', 12).attr('font-weight', 700).attr('fill', C.gris)
+    .text(d => d.promedio ? d.promedio.toFixed(2).replace('.', ',') : '');
+
+  // N labels (below bar)
+
+
+  // Warning low N
+  g.selectAll('.warn-lbl').data(data.perQ.filter(q => q.n < 2)).join('text')
+    .attr('class', 'warn-lbl')
+    .attr('x', d => x(d.id) + x.bandwidth() / 2)
+    .attr('y', d => d.promedio ? y(d.promedio) - 20 : innerH - 20)
+    .attr('text-anchor', 'middle').attr('font-size', 14).text('⚠️');
+
+  // X axis
+  g.append('g').attr('transform', `translate(0,${innerH})`).call(d3.axisBottom(x).tickSize(0))
+    .call(ax => ax.select('.domain').attr('stroke', '#E2E4EF'))
+    .call(ax => ax.selectAll('text').attr('font-size', 11).attr('fill', C.gris).attr('font-weight', 600));
+
+  // Y axis
+  g.append('g').call(d3.axisLeft(y).ticks(7))
+    .call(ax => ax.select('.domain').remove())
+    .call(ax => ax.selectAll('text').attr('font-size', 10).attr('fill', '#94A3B8'));
+
+  // X axis labels (wrapped)
+  const W2 = x.bandwidth();
+  g.selectAll('.q-label').data(data.perQ).join('foreignObject')
+    .attr('class', 'q-label')
+    .attr('x', d => x(d.id)-20)
+    .attr('y', innerH + 36)
+    .attr('width', W2-10 + x.step() * x.paddingInner())
+    .attr('height', 120)
+    .html(d => `<div xmlns="http://www.w3.org/1999/xhtml"
+      style="font-size:10px;color:#6B7280;text-align:center;word-wrap:break-word;overflow:hidden;max-height:70px;background:#F0F0F0">
+      ${d.label.substring(0, 80)}${d.label.length > 80 ? '…' : ''}
+    </div>`);
+
+  // Tooltip
+  bars.on('mousemove', (event, d) => {
+    const tip = `<strong>${d.id}</strong><br>
+      ${d.label.substring(0, 60)}…<br><br>
+      Promedio: <strong>${d.promedio?.toFixed(2).replace('.',',') || '—'}</strong><br>
+      DE: ${d.std?.toFixed(2).replace('.',',') || '—'}<br>
+      Mín: ${d.min} · Máx: ${d.max}<br>
+      N respuestas: ${d.n}${d.n < 2 ? '<br><span style="color:#FD8983">⚠ n < 2: resultado referencial</span>' : ''}`;
+    showTip(tip, event);
+  }).on('mouseleave', hideTip);
+
+  // Tabs
+  document.querySelectorAll('#tabs-q .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tipo);
+    btn.onclick = () => { state.activeTabQ = btn.dataset.tab; renderQuestions(btn.dataset.tab); };
+  });
+}
+
+// ── HEATMAP ──────────────────────────────────────────────────────────────────
+function renderHeatmap(tipo) {
+  const data = computeAll(tipo);
+  const el = document.getElementById('chart-heatmap');
+  el.innerHTML = '';
+
+  const entities = data.perEntity.map(e => e.entidad);
+  const labels = data.labels;
+  const ids = labels.map((_, i) => tipo === 'formalizacion' ? `F${i+1}` : `S${i+1}`);
+
+  const cellW = 116, cellH = 58;
+  const labelW = 150, headerH = 150;
+  const W = labelW + ids.length * cellW + 10;
+  const H = headerH + entities.length * cellH + 20;
+
+  const svg = d3.select(el).append('svg').attr('width', W).attr('height', H);
+
+  // Column headers (ID + full wrapped question text)
+  ids.forEach((id, qi) => {
+    const cx = labelW + qi * cellW + cellW / 2;
+    // ID badge
+    svg.append('text')
+      .attr('x', cx).attr('y', 22)
+      .attr('text-anchor', 'middle').attr('font-size', 15).attr('font-weight', 800)
+      .attr('fill', C.azul).text(id);
+    // Full question label, wrapped in foreignObject so it is always fully visible
+    svg.append('foreignObject')
+      .attr('x', labelW + qi * cellW + 4).attr('y', 30)
+      .attr('width', cellW - 8).attr('height', headerH - 36)
+      .append('xhtml:div')
+      .attr('xmlns', 'http://www.w3.org/1999/xhtml')
+      .style('font-size', '10.5px')
+      .style('line-height', '1.25')
+      .style('color', '#5B6270')
+      .style('text-align', 'center')
+      .style('height', '100%')
+      .style('display', 'flex')
+      .style('align-items', 'flex-end')
+      .style('justify-content', 'center')
+      .style('overflow', 'hidden')
+      .html(labels[qi]);
+  });
+
+  entities.forEach((ent, ei) => {
+    // Row label
+    svg.append('text')
+      .attr('x', labelW - 12).attr('y', headerH + ei * cellH + cellH / 2)
+      .attr('text-anchor', 'end').attr('dominant-baseline', 'middle')
+      .attr('font-size', 13).attr('font-weight', 600).attr('fill', C.gris)
+      .text(ent);
+
+    // Cells
+    const entData = data.perEntity.find(e => e.entidad === ent);
+    ids.forEach((id, qi) => {
+      const val = entData?.perQ?.[qi];
+      const n_recs = entData?.n_recs;
+
+      const cell = svg.append('g')
+        .attr('transform', `translate(${labelW + qi * cellW}, ${headerH + ei * cellH})`);
+
+      cell.append('rect')
+        .attr('width', cellW - 4).attr('height', cellH - 4)
+        .attr('rx', 7).attr('fill', val ? colorScale(val) : '#F0F0F0')
+        .attr('stroke', n_recs < 2 ? C.coral : 'transparent')
+        .attr('stroke-width', n_recs < 2 ? 1.5 : 0);
+
+      cell.append('text')
+        .attr('x', (cellW - 4) / 2).attr('y', (cellH - 4) / 2)
+        .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+        .attr('font-size', 17).attr('font-weight', 700)
+        .attr('fill', val ? (val > 5 ? '#1A3C34' : '#4A1A18') : '#CCC')
+        .text(val ? val.toFixed(1).replace('.', ',') : '—');
+
+      // Tooltip
+      cell.on('mousemove', event => {
+        const tip = `<strong>${ent}</strong> · ${id}<br>
+          ${labels[qi]}<br><br>
+          Promedio: <strong>${val ? val.toFixed(2).replace('.',',') : '—'}</strong><br>
+          Evaluaciones: ${n_recs}${n_recs < 2 ? '<br><span style="color:#FD8983">⚠ n < 2: referencial</span>' : ''}`;
+        showTip(tip, event);
+      }).on('mouseleave', hideTip);
+    });
+  });
+
+  // Tabs
+  document.querySelectorAll('#tabs-hm .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tipo);
+    btn.onclick = () => { state.activeTabHm = btn.dataset.tab; renderHeatmap(btn.dataset.tab); };
+  });
+}
+
+// ── MAP ──────────────────────────────────────────────────────────────────────
+const REGION_CENTROIDS = [
+  { name: "Región de Arica y Parinacota", code: "XV", lat: -18.48, lon: -69.64 },
+  { name: "Región de Tarapacá", code: "I", lat: -20.21, lon: -69.31 },
+  { name: "Región de Antofagasta", code: "II", lat: -23.65, lon: -68.14 },
+  { name: "Región de Atacama", code: "III", lat: -27.37, lon: -70.33 },
+  { name: "Región de Coquimbo", code: "IV", lat: -30.06, lon: -70.81 },
+  { name: "Región de Valparaíso", code: "V", lat: -33.04, lon: -71.62 },
+  { name: "Región Metropolitana de Santiago", code: "RM", lat: -33.46, lon: -70.65 },
+  { name: "Región del Libertador General Bernardo O'Higgins", code: "VI", lat: -34.58, lon: -71.00 },
+  { name: "Región del Maule", code: "VII", lat: -35.51, lon: -71.57 },
+  { name: "Región de Ñuble", code: "XVI", lat: -36.73, lon: -71.76 },
+  { name: "Región del Biobío", code: "VIII", lat: -37.47, lon: -72.01 },
+  { name: "Región de La Araucanía", code: "IX", lat: -38.55, lon: -72.60 },
+  { name: "Región de Los Ríos", code: "XIV", lat: -39.82, lon: -72.72 },
+  { name: "Región de Los Lagos", code: "X", lat: -41.47, lon: -72.93 },
+  { name: "Región de Aysén del General Carlos Ibáñez del Campo", code: "XI", lat: -45.57, lon: -72.06 },
+  { name: "Región de Magallanes y de la Antártica Chilena", code: "XII", lat: -52.00, lon: -72.00 }
+];
+
+// Orden geográfico (norte→sur). "Nacional" va primero; desconocidas al final.
+function geoRegionRank(name) {
+  if (name === 'Nacional') return -1;
+  const i = REGION_CENTROIDS.findIndex(rc => rc.name === name);
+  return i === -1 ? 999 : i;
+}
+
+function renderMap(f, s) {
+  const mapEl = document.getElementById('map-svg-wrap');
+  const legendEl = document.getElementById('map-legend-wrap');
+  mapEl.innerHTML = '';
+  legendEl.innerHTML = '';
+
+  // Merge region data
+  const regionMap = {};
+  const allRegions = [...new Set([...f.perRegion.map(r => r.region), ...s.perRegion.map(r => r.region)])];
+  allRegions.forEach(reg => {
+    const fr = f.perRegion.find(r => r.region === reg);
+    const sr = s.perRegion.find(r => r.region === reg);
+    const pf = fr?.promedio, ps = sr?.promedio;
+    const pg = pf && ps ? (pf + ps) / 2 : pf || ps;
+    regionMap[reg] = { pf, ps, pg, nf: fr?.n || 0, ns: sr?.n || 0 };
+  });
+
+  // Mapa norte→sur: regiones espaciadas uniformemente (evita solapamiento por latitud)
+  const nacData = regionMap['Nacional'];
+  const rowH = 30, topPad = 44, sidePad = 18;
+  const spineX = 70;
+  const W = 300;
+  const H = topPad + REGION_CENTROIDS.length * rowH + 16;
+  const svg = d3.select(mapEl).append('svg').attr('width', W).attr('height', H)
+    .style('display', 'block');
+
+  // Título Nacional (no es geográfica)
+  if (nacData) {
+    const ng = svg.append('g').attr('transform', `translate(${sidePad}, 18)`).style('cursor', 'pointer');
+    ng.append('rect').attr('x', 0).attr('y', -13).attr('width', 150).attr('height', 26)
+      .attr('rx', 6).attr('fill', nacData.pg ? colorScale(nacData.pg) : '#EEE')
+      .attr('stroke', 'white').attr('stroke-width', 1.5);
+    ng.append('text').attr('x', 75).attr('y', 1)
+      .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+      .attr('font-size', 11).attr('font-weight', 700).attr('fill', '#1A1A1A')
+      .text(`Nacional: ${nacData.pg ? nacData.pg.toFixed(2).replace('.',',') : '—'}`);
+    ng.on('mousemove', event => {
+      showTip(`<strong>Nacional</strong><br>Promedio: ${nacData.pg?.toFixed(2).replace('.',',') || '—'}<br>
+        Formalización: ${nacData.pf?.toFixed(2).replace('.',',') || '—'}<br>
+        Seguimiento: ${nacData.ps?.toFixed(2).replace('.',',') || '—'}`, event);
+    }).on('mouseleave', hideTip);
+  }
+
+  // Espina dorsal (evoca el territorio norte→sur)
+  svg.append('line')
+    .attr('x1', spineX).attr('x2', spineX)
+    .attr('y1', topPad - 4).attr('y2', topPad + (REGION_CENTROIDS.length - 1) * rowH + 4)
+    .attr('stroke', '#D6DAE8').attr('stroke-width', 2);
+
+  // Burbujas por región (ordenadas norte→sur según REGION_CENTROIDS)
+  REGION_CENTROIDS.forEach((rc, i) => {
+    const cy = topPad + i * rowH;
+    const rdata = regionMap[rc.name];
+    const val = rdata?.pg;
+    const hasData = val !== null && val !== undefined;
+
+    const g = svg.append('g').attr('transform', `translate(${spineX}, ${cy})`).style('cursor', 'pointer');
+
+    // Burbuja
+    g.append('circle').attr('r', hasData ? 12 : 8)
+      .attr('fill', hasData ? colorScale(val) : '#EDEFF5')
+      .attr('stroke', hasData ? 'white' : '#CCD2E0')
+      .attr('stroke-width', 1.5);
+    g.append('text').attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+      .attr('font-size', hasData ? 9 : 8).attr('font-weight', 700)
+      .attr('fill', hasData ? '#1A1A1A' : '#AAA')
+      .text(hasData ? val.toFixed(1).replace('.', ',') : '·');
+
+    // Código de región a la izquierda de la espina
+    g.append('text').attr('x', -22).attr('y', 0)
+      .attr('text-anchor', 'end').attr('dominant-baseline', 'middle')
+      .attr('font-size', 9).attr('font-weight', 600).attr('fill', '#94A3B8')
+      .text(rc.code);
+
+    // Nombre corto de región a la derecha
+    g.append('text').attr('x', 22).attr('y', 0)
+      .attr('dominant-baseline', 'middle')
+      .attr('font-size', 10).attr('fill', C.gris)
+      .text(rc.name.replace('Región ', '').replace('del ', '').replace('de la ', '').replace('de ', '')
+        .replace(' del General Carlos Ibáñez del Campo', '').replace(' y de la Antártica Chilena', '')
+        .replace('Metropolitana de Santiago', 'Metropolitana')
+        .replace(' General Bernardo O\'Higgins', ''));
+
+    g.on('mousemove', event => {
+      const tip = `<strong>${rc.name}</strong><br>
+        Promedio general: <strong>${val?.toFixed(2).replace('.',',') || '—'}</strong><br>
+        Formalización: ${rdata?.pf?.toFixed(2).replace('.',',') || '—'} (n=${rdata?.nf||0})<br>
+        Seguimiento: ${rdata?.ps?.toFixed(2).replace('.',',') || '—'} (n=${rdata?.ns||0})`;
+      showTip(tip, event);
+    }).on('mouseleave', hideTip);
+  });
+
+  // Legend (region table)
+  legendEl.style.cssText = 'font-size:12px;overflow-y:auto';
+  const sorted = Object.entries(regionMap)
+    .filter(([k]) => k !== 'Nacional')
+    .sort((a, b) => geoRegionRank(a[0]) - geoRegionRank(b[0]));
+
+  if (nacData) sorted.unshift(['Nacional', nacData]);
+
+  legendEl.innerHTML = `
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead>
+        <tr style="background:var(--bg)">
+          <th style="padding:8px 10px;text-align:left;font-weight:600;color:var(--text-light);font-size:10px;text-transform:uppercase;border-bottom:2px solid var(--border)">Región</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;color:var(--text-light);font-size:10px;text-transform:uppercase;border-bottom:2px solid var(--border)">Gral</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;color:var(--text-light);font-size:10px;text-transform:uppercase;border-bottom:2px solid var(--border)">Form</th>
+          <th style="padding:8px 10px;text-align:center;font-weight:600;color:var(--text-light);font-size:10px;text-transform:uppercase;border-bottom:2px solid var(--border)">Seg</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sorted.map(([reg, d]) => `
+          <tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:6px 10px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${reg}">${reg.replace('Región ', '').replace('del ', '').replace('de la ', '').replace('de ', '')}</td>
+            <td style="padding:6px 10px;text-align:center">
+              <span style="display:inline-block;padding:2px 8px;border-radius:4px;font-weight:700;font-size:12px;background:${d.pg ? colorScale(d.pg) : '#EEE'}">
+                ${d.pg ? d.pg.toFixed(2).replace('.',',') : '—'}
+              </span>
+            </td>
+            <td style="padding:6px 10px;text-align:center;color:var(--text-light)">${d.pf ? d.pf.toFixed(2).replace('.',',') : '—'}</td>
+            <td style="padding:6px 10px;text-align:center;color:var(--text-light)">${d.ps ? d.ps.toFixed(2).replace('.',',') : '—'}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ── RESPONSE TABLES ──────────────────────────────────────────────────────────
+function renderResponseTables() {
+  const rr = state.respData;
+  if (!rr) return;
+
+  // Narrative
+  const el = document.getElementById('narrative-response');
+  const total = rr.total;
+  let txt = `Se invitó a <strong>${total.total}</strong> ejecutivos/as a completar evaluaciones (considerando las distintas dimensiones y entidades). `;
+  txt += `La tasa de respuesta global es <strong>${(total.tasa * 100).toFixed(0)}%</strong> (${total.contestadas} respuestas). `;
+  const tF = rr.formalizacion, tS = rr.seguimiento;
+  if (tF && tS) {
+    const mejor = tF.tasa >= tS.tasa ? ['Formalización', tF] : ['Seguimiento', tS];
+    txt += `La encuesta de <strong>${mejor[0]}</strong> presenta la mayor tasa de respuesta (${(mejor[1].tasa * 100).toFixed(0)}%), `;
+    txt += `frente a ${(tF.tasa >= tS.tasa ? tS.tasa : tF.tasa) * 100 | 0}% de la otra dimensión.`;
+  }
+  el.innerHTML = txt;
+
+  // Tabla por tipo de encuesta (Formalización / Seguimiento)
+  const rolTbl = document.getElementById('tbl-resp-rol');
+  const tiposEncuesta = [
+    ['Formalización', rr.formalizacion],
+    ['Seguimiento', rr.seguimiento]
+  ];
+  rolTbl.innerHTML = `
+    <thead><tr>
+      <th>Encuesta</th><th>Tasa</th><th>Progreso</th>
+    </tr></thead>
+    <tbody>
+      ${tiposEncuesta.map(([tipo, d]) => `
+        <tr>
+          <td><strong>${tipo}</strong></td>
+          <td><strong>${(d.tasa * 100).toFixed(0)}%</strong></td>
+          <td><div class="progress-bar"><div class="progress-fill${d.tasa < 0.5 ? ' low' : ''}" style="width:${(d.tasa * 100).toFixed(0)}%"></div></div></td>
+        </tr>
+      `).join('')}
+    </tbody>`;
+
+  // Entity table
+  const entTbl = document.getElementById('tbl-resp-entidad');
+  const entEntries = Object.entries(rr.por_entidad).sort((a,b) => b[1].general.tasa - a[1].general.tasa);
+  entTbl.innerHTML = `
+    <thead><tr>
+      <th>Entidad</th><th>Total</th>
+    </tr></thead>
+    <tbody>
+      ${entEntries.map(([ent, d]) => `
+        <tr>
+          <td title="${ent}">${ent.length > 18 ? ent.substring(0,16)+'…' : ent}</td>
+          <td><strong>${(d.general.tasa * 100).toFixed(0)}%</strong></td>
+        </tr>
+      `).join('')}
+    </tbody>`;
+}
+
+// ── BOOTSTRAP ─────────────────────────────────────────────────────────────────
+// Se ejecuta al final: state, init() y demás funciones ya están definidas.
+// ── DRAWER MÓVIL (filtros) ─────────────────────────────────────────────────
+const _menuToggle = document.getElementById('menu-toggle');
+const _sidebar = document.getElementById('sidebar');
+const _overlay = document.getElementById('sidebar-overlay');
+function openDrawer() {
+  _sidebar.classList.add('open');
+  _overlay.style.display = 'block';
+  requestAnimationFrame(() => _overlay.classList.add('visible'));
+}
+function closeDrawer() {
+  _sidebar.classList.remove('open');
+  _overlay.classList.remove('visible');
+  setTimeout(() => { _overlay.style.display = 'none'; }, 300);
+}
+if (_menuToggle) {
+  _menuToggle.addEventListener('click', () =>
+    _sidebar.classList.contains('open') ? closeDrawer() : openDrawer());
+  _overlay.addEventListener('click', closeDrawer);
+}
+
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  // Al volver a escritorio, cerrar el drawer para evitar estados colgados
+  if (window.innerWidth > 900 && _sidebar.classList.contains('open')) closeDrawer();
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => { if (state.data) render(); }, 250);
+});
+
+(function bootstrap() {
+  try {
+    if (typeof d3 === 'undefined') {
+      // D3 local no disponible — intentar CDN (requiere internet)
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js';
+      s.onload = init;
+      s.onerror = () => {
+        document.getElementById('loading').innerHTML =
+          '<div style="color:white;font-size:14px;text-align:center;padding:20px">' +
+          'No se pudo cargar D3.<br><small>Verifica vendor/d3.v7.min.js o la conexión a internet</small></div>';
+      };
+      document.head.appendChild(s);
+    } else {
+      init();
+    }
+  } catch (err) {
+    document.getElementById('loading').innerHTML =
+      '<div style="color:white;font-size:14px;text-align:center;padding:20px">' +
+      'Error de inicialización.<br><small>' + err.message + '</small></div>';
+    console.error(err);
+  }
+})();
+
+</script>
+</body>
+</html>

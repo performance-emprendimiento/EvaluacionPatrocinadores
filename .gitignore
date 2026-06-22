@@ -1,0 +1,17 @@
+# ── Datos fuente con información personal (NO publicar) ──
+# El Excel contiene correos electrónicos de ejecutivos/as de Corfo.
+# El sitio NO lo necesita: los datos ya están incrustados en index.html.
+*.xlsx
+*.xls
+
+# Archivos temporales / scripts auxiliares
+_inspect.py
+~$*
+
+# Caché de Python
+__pycache__/
+*.pyc
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
